@@ -524,6 +524,9 @@ importers:
       mdast-util-wiki-link:
         specifier: ^0.1.2
         version: 0.1.2
+      meilisearch:
+        specifier: ^0.58.0
+        version: 0.58.0
       mermaid:
         specifier: ^11.15.0
         version: 11.15.0
@@ -10345,6 +10348,10 @@ packages:
   media-typer@0.3.0:
     resolution: {integrity: sha512-dq+qelQ9akHpcOl/gUVRTxVIOkAJ1wR3QAvb4RsVjS8oVoFjDGTc679wJYmUmknUF5HwMLOgb5O+a3KxfWapPQ==}
     engines: {node: '>= 0.6'}
+
+  meilisearch@0.58.0:
+    resolution: {integrity: sha512-MXFlU+JVG2I3tDI4brS3UHxEv2fjOROP24TPP16c8dGHTulb1kxMgXvKP0x4ImvUcsVVJFi4QXP0JNDS/TaWaw==}
+    engines: {node: ^20.19.0 || >=22.12.0}
 
   memory-pager@1.1.0:
     resolution: {integrity: sha512-Mf9OHV/Y7h6YWDxTzX/b4ZZ4oh9NSXblQL8dtPCOomOtZciEHxePR78+uHFLLlsk01A6jVHhHsQZZ/WcIPpnzg==}
@@ -24970,6 +24977,8 @@ snapshots:
   mdurl@1.0.1: {}
 
   media-typer@0.3.0: {}
+
+  meilisearch@0.58.0: {}
 
   memory-pager@1.1.0: {}
 

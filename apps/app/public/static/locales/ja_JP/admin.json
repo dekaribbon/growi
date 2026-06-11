@@ -287,6 +287,8 @@
     "toggle_notification": "{{path}}の通知設定を変更しました",
     "not_found_global_notification_triggerid": "アクセス先の通知設定は見つかりませんでした"
   },
+  "search_engine": "検索エンジン",
+  "number_of_documents": "ドキュメント数",
   "full_text_search_management": {
     "full_text_search_management": "全文検索管理",
     "elasticsearch_management": "Elasticsearch 管理",
@@ -301,7 +303,7 @@
     "indices_summary": "インデックスのサマリ",
     "reconnect": "再接続",
     "reconnect_button": "再接続の試行",
-    "reconnect_description": "Elasticsearch への再接続を試みます。",
+    "reconnect_description": "検索エンジンへの再接続を試みます。",
     "normalize": "正規化",
     "normalize_button": "インデックスの正規化",
     "normalize_description": "破損したインデックスを修復します。",

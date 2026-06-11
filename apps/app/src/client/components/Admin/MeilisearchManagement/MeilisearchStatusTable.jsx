@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'next-i18next';
 import PropTypes from 'prop-types';
 
-class StatusTable extends React.PureComponent {
+class MeilisearchStatusTable extends React.PureComponent {
   renderPreInitializedLabel() {
     return <span className="badge text-bg-default">――</span>;
   }
@@ -66,80 +66,21 @@ class StatusTable extends React.PureComponent {
     );
   }
 
-  renderIndexInfoPanel(indexName, body = {}, aliases = []) {
-    const collapseId = `collapse-${indexName}`;
-
-    const aliasLabels = aliases.map((aliasName) => {
-      return (
-        <span
-          key={`badge-${indexName}-${aliasName}`}
-          className="badge text-bg-primary me-2"
-        >
-          <span className="material-symbols-outlined">sell</span>
-          <span>{aliasName}</span>
-        </span>
-      );
-    });
+  renderMeilisearchInfo() {
+    const { t, documentCount } = this.props;
 
     return (
-      <div className="card">
-        <div className="card-header">
-          <button
-            type="button"
-            className="text-nowrap me-2 btn btn-link p-0"
-            data-bs-toggle="collapse"
-            data-bs-target={`#${collapseId}`}
-            aria-expanded="true"
-            aria-controls={collapseId}
-          >
-            <span className="material-symbols-outlined">database</span>{' '}
-            {indexName}
-          </button>
-          <span className="ms-md-3">{aliasLabels}</span>
+      <div>
+        <div className="mb-2">
+          <span className="fw-bold me-2">{t('search_engine')}:</span>
+          <span className="badge text-bg-secondary">meilisearch</span>
         </div>
-        <div id={collapseId} className="collapse">
-          <div className="card-body">
-            <pre>{JSON.stringify(body, null, 2)}</pre>
+        {documentCount != null && (
+          <div className="mb-2">
+            <span className="fw-bold me-2">{t('number_of_documents')}:</span>
+            <span className="badge text-bg-info">{documentCount}</span>
           </div>
-        </div>
-      </div>
-    );
-  }
-
-  renderIndexInfoPanels() {
-    const { indicesData, aliasesData } = this.props;
-
-    if (indicesData == null) {
-      return null;
-    }
-
-    const indexNameToDataMap = {};
-    for (const [indexName, indexData] of Object.entries(indicesData)) {
-      indexNameToDataMap[indexName] = indexData;
-    }
-
-    if (indexNameToDataMap.length === 0) {
-      return null;
-    }
-
-    const indexNameToAliasMap = {};
-    for (const [indexName, aliasData] of Object.entries(aliasesData)) {
-      indexNameToAliasMap[indexName] = Object.keys(aliasData.aliases);
-    }
-
-    return (
-      <div className="row">
-        {Object.keys(indexNameToDataMap).map((indexName) => {
-          return (
-            <div key={`col-${indexName}`} className="col-md-6">
-              {this.renderIndexInfoPanel(
-                indexName,
-                indexNameToDataMap[indexName],
-                indexNameToAliasMap[indexName],
-              )}
-            </div>
-          );
-        })}
+        )}
       </div>
     );
   }
@@ -176,7 +117,7 @@ class StatusTable extends React.PureComponent {
               {t('full_text_search_management.indices_summary')}
             </th>
             <td className="p-4 w-75">
-              {isInitialized ? this.renderIndexInfoPanels() : null}
+              {isInitialized ? this.renderMeilisearchInfo() : null}
             </td>
           </tr>
         </tbody>
@@ -185,13 +126,13 @@ class StatusTable extends React.PureComponent {
   }
 }
 
-const StatusTableWrapperFC = (props) => {
+const MeilisearchStatusTableWrapperFC = (props) => {
   const { t } = useTranslation('admin');
 
-  return <StatusTable t={t} {...props} />;
+  return <MeilisearchStatusTable t={t} {...props} />;
 };
 
-StatusTable.propTypes = {
+MeilisearchStatusTable.propTypes = {
   t: PropTypes.func.isRequired,
 
   isInitialized: PropTypes.bool,
@@ -200,8 +141,7 @@ StatusTable.propTypes = {
   isConnected: PropTypes.bool,
   isConfigured: PropTypes.bool,
   isNormalized: PropTypes.bool,
-  indicesData: PropTypes.object,
-  aliasesData: PropTypes.object,
+  documentCount: PropTypes.number,
 };
 
-export default StatusTableWrapperFC;
+export default MeilisearchStatusTableWrapperFC;

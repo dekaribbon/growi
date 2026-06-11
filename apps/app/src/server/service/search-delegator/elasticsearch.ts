@@ -16,6 +16,7 @@ import loggerFactory from '~/utils/logger';
 import type {
   ESQueryTerms,
   ESTermsKey,
+  FullTextSearchDelegator,
   QueryTerms,
   SearchableData,
   SearchDelegator,
@@ -80,7 +81,7 @@ const AVAILABLE_KEYS = [
 type Data = any;
 
 class ElasticsearchDelegator
-  implements SearchDelegator<Data, ESTermsKey, ESQueryTerms>
+  implements FullTextSearchDelegator<Data, ESTermsKey, ESQueryTerms>
 {
   name!: SearchDelegatorName.DEFAULT;
 

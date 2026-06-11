@@ -151,7 +151,8 @@ module.exports = (crowi) => {
 
       try {
         const info = await searchService.getInfoForAdmin();
-        return res.status(200).send({ info });
+        const provider = searchService.getSearchProvider();
+        return res.status(200).send({ info, provider });
       } catch (err) {
         logger.error(err);
         return res.apiv3Err(err, 503);
