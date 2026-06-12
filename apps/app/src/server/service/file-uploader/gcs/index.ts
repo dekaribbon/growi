@@ -321,6 +321,12 @@ module.exports = (crowi: Crowi) => {
     return myBucket.file(filePath).save(data, { resumable: false });
   };
 
+  lib.deleteTmpFile = async (filePath: string) => {
+    const gcs = getGcsInstance();
+    const myBucket = gcs.bucket(getGcsBucket());
+    await myBucket.file(filePath).delete({ ignoreNotFound: true });
+  };
+
   /**
    * List files in storage
    */

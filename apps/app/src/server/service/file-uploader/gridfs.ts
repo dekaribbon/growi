@@ -275,6 +275,22 @@ module.exports = (crowi: Crowi) => {
     }
   };
 
+  lib.deleteTmpFile = async (filePath: string) => {
+    const { attachmentFileModel, chunkCollection } = initializeGridFSModels();
+
+    const attachmentFile = await attachmentFileModel.findOne({
+      filename: filePath,
+    });
+    if (attachmentFile == null) {
+      return;
+    }
+
+    await Promise.all([
+      attachmentFileModel.deleteOne({ _id: attachmentFile._id }),
+      chunkCollection.deleteMany({ files_id: attachmentFile._id }),
+    ]);
+  };
+
   /**
    * Find data substance
    *

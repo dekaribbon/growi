@@ -230,6 +230,17 @@ module.exports = (crowi: Crowi) => {
     return pipeline(fileStream, writeStream);
   };
 
+  lib.deleteTmpFile = async (filePath: string) => {
+    const absFilePath = path.posix.join(basePath, filePath);
+    try {
+      await fsPromises.unlink(absFilePath);
+    } catch (err) {
+      if (err.code !== 'ENOENT') {
+        throw err;
+      }
+    }
+  };
+
   /**
    * Find data substance
    *
