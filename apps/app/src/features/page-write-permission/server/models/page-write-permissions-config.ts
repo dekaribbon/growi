@@ -10,12 +10,16 @@ interface PageWritePermissionRule {
 }
 
 export interface PageWritePermissionsConfig {
-  key: string;
   rules: PageWritePermissionRule[];
+}
+
+interface PageWritePermissionsConfigDocumentFields {
+  key: string;
 }
 
 export interface PageWritePermissionsConfigDocument
   extends PageWritePermissionsConfig,
+    PageWritePermissionsConfigDocumentFields,
     Document {}
 
 export interface PageWritePermissionsConfigModel
