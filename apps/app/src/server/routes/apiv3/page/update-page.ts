@@ -40,6 +40,8 @@ import { getYjsService } from '~/server/service/yjs';
 import { generalXssFilter } from '~/services/general-xss-filter';
 import loggerFactory from '~/utils/logger';
 
+import { pageWritePermissionForPageIdMiddleware } from '../../../../features/page-write-permission/server/middlewares';
+
 import { apiV3FormValidator } from '../../../middlewares/apiv3-form-validator';
 import { excludeReadOnlyUser } from '../../../middlewares/exclude-read-only-user';
 import type { ApiV3Response } from '../interfaces/apiv3-response';
@@ -221,6 +223,7 @@ export const updatePageHandlersFactory = (crowi: Crowi): RequestHandler[] => {
     loginRequiredStrictly,
     excludeReadOnlyUser,
     addActivity,
+    pageWritePermissionForPageIdMiddleware,
     ...validator,
     apiV3FormValidator,
     async (req: UpdatePageRequest, res: ApiV3Response) => {
