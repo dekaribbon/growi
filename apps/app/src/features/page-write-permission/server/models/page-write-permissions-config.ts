@@ -10,6 +10,7 @@ interface PageWritePermissionRule {
 }
 
 export interface PageWritePermissionsConfig {
+  key: string;
   rules: PageWritePermissionRule[];
 }
 

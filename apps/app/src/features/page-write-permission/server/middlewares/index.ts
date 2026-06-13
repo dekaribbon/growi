@@ -1,11 +1,17 @@
 import type { IUserHasId } from '@growi/core/dist/interfaces';
-import type { NextFunction, Request, Response } from 'express';
+import type { NextFunction, Response } from 'express';
 import mongoose from 'mongoose';
 
 import { isUserAllowedToWrite } from '../services';
 
+interface RequestWithUser {
+  user?: IUserHasId;
+  body?: Record<string, unknown>;
+  params?: Record<string, string>;
+}
+
 export async function pageWritePermissionForPageIdMiddleware(
-  req: Request,
+  req: RequestWithUser,
   res: Response,
   next: NextFunction,
 ): Promise<void> {
