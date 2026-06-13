@@ -42,9 +42,7 @@ export const PageWritePermissions: React.FC = () => {
   }, []);
 
   const updatePattern = useCallback((index: number, value: string) => {
-    setRules((prev) =>
-      prev.map((r, i) => (i === index ? { ...r, pattern: value } : r)),
-    );
+    setRules((prev) => prev.map((r, i) => (i === index ? { ...r, pattern: value } : r)));
   }, []);
 
   const updateUsers = useCallback((index: number, value: string) => {
@@ -52,9 +50,7 @@ export const PageWritePermissions: React.FC = () => {
       .split(',')
       .map((s) => s.trim())
       .filter(Boolean);
-    setRules((prev) =>
-      prev.map((r, i) => (i === index ? { ...r, users } : r)),
-    );
+    setRules((prev) => prev.map((r, i) => (i === index ? { ...r, users } : r)));
   }, []);
 
   const updateGroups = useCallback((index: number, value: string) => {
@@ -62,9 +58,7 @@ export const PageWritePermissions: React.FC = () => {
       .split(',')
       .map((s) => s.trim())
       .filter(Boolean);
-    setRules((prev) =>
-      prev.map((r, i) => (i === index ? { ...r, groups } : r)),
-    );
+    setRules((prev) => prev.map((r, i) => (i === index ? { ...r, groups } : r)));
   }, []);
 
   const save = useCallback(async () => {
