@@ -16,6 +16,7 @@ import type { HydratedDocument } from 'mongoose';
 import mongoose from 'mongoose';
 
 import { isAiEnabled } from '~/features/openai/server/services';
+import { pageWritePermissionForPageIdMiddleware } from '~/features/page-write-permission/server/middlewares';
 import { SupportedAction, SupportedTargetModel } from '~/interfaces/activity';
 import {
   type IApiv3PageUpdateParams,
@@ -40,7 +41,6 @@ import { getYjsService } from '~/server/service/yjs';
 import { generalXssFilter } from '~/services/general-xss-filter';
 import loggerFactory from '~/utils/logger';
 
-import { pageWritePermissionForPageIdMiddleware } from '../../../../features/page-write-permission/server/middlewares';
 import { apiV3FormValidator } from '../../../middlewares/apiv3-form-validator';
 import { excludeReadOnlyUser } from '../../../middlewares/exclude-read-only-user';
 import type { ApiV3Response } from '../interfaces/apiv3-response';
@@ -222,9 +222,9 @@ export const updatePageHandlersFactory = (crowi: Crowi): RequestHandler[] => {
     loginRequiredStrictly,
     excludeReadOnlyUser,
     addActivity,
-    pageWritePermissionForPageIdMiddleware,
     ...validator,
     apiV3FormValidator,
+    pageWritePermissionForPageIdMiddleware,
     async (req: UpdatePageRequest, res: ApiV3Response) => {
       const { pageId, revisionId, body, origin, grant } = req.body;
 

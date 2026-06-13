@@ -1,4 +1,5 @@
 import type { IUserHasId } from '@growi/core/dist/interfaces';
+import { ErrorV3 } from '@growi/core/dist/models';
 import type { NextFunction, Response } from 'express';
 import mongoose from 'mongoose';
 
@@ -8,6 +9,10 @@ interface RequestWithUser {
   user?: IUserHasId;
   body?: Record<string, unknown>;
   params?: Record<string, string>;
+}
+
+function isValidObjectId(id: string): boolean {
+  return mongoose.Types.ObjectId.isValid(id);
 }
 
 export async function pageWritePermissionForPageIdMiddleware(
@@ -28,6 +33,11 @@ export async function pageWritePermissionForPageIdMiddleware(
     return;
   }
 
+  if (!isValidObjectId(pageId)) {
+    next();
+    return;
+  }
+
   try {
     const Page = mongoose.model('Page');
     const page = await Page.findById(pageId).select('path').lean();
@@ -38,13 +48,20 @@ export async function pageWritePermissionForPageIdMiddleware(
 
     const allowed = await isUserAllowedToWrite(page.path as string, user);
     if (!allowed) {
-      res.status(403).json({
-        message: 'You do not have permission to edit this page.',
-      });
+      (res as any).apiv3Err(
+        new ErrorV3(
+          'You do not have permission to edit this page.',
+          'forbidden',
+        ),
+        403,
+      );
       return;
     }
   } catch {
-    res.status(500).json({ message: 'Internal server error' });
+    (res as any).apiv3Err(
+      new ErrorV3('Internal server error', 'internal_server_error'),
+      500,
+    );
     return;
   }
 

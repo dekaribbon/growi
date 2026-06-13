@@ -61,7 +61,7 @@ schema.statics.updateConfig = async function (
   const doc = await this.findOneAndUpdate(
     { key: KEY },
     { rules: config.rules },
-    { upsert: true, new: true, lean: false },
+    { upsert: true, new: true, lean: false, setDefaultsOnInsert: true },
   );
   return doc!;
 };

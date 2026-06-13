@@ -24,6 +24,7 @@ export const PageWritePermissions: React.FC = () => {
   const { data, mutate, error } = useSWR(
     '/page-write-permissions/',
     fetchConfig,
+    { revalidateOnFocus: false, revalidateOnReconnect: false },
   );
   const [rules, setRules] = useState<Rule[]>([]);
   const [saving, setSaving] = useState(false);

@@ -1,4 +1,5 @@
 import { SCOPE } from '@growi/core/dist/interfaces';
+import { ErrorV3 } from '@growi/core/dist/models';
 import express from 'express';
 import mongoose from 'mongoose';
 
@@ -14,6 +15,27 @@ import loginRequiredFactory from '~/server/middlewares/login-required';
 import loggerFactory from '~/utils/logger';
 
 const logger = loggerFactory('growi:routes:apiv3:page-write-permissions');
+
+function validateRule(
+  rule: unknown,
+): rule is PageWritePermissionsConfig['rules'][number] {
+  if (rule == null || typeof rule !== 'object') return false;
+  const r = rule as Record<string, unknown>;
+  return typeof r.pattern === 'string' && r.pattern.length > 0;
+}
+
+function sanitizeRules(rules: unknown[]): PageWritePermissionsConfig['rules'] {
+  return rules.filter(validateRule).map((r) => {
+    const rule = r as Record<string, unknown>;
+    const users = Array.isArray(rule.users)
+      ? rule.users.filter((u): u is string => typeof u === 'string')
+      : [];
+    const groups = Array.isArray(rule.groups)
+      ? rule.groups.filter((g): g is string => typeof g === 'string')
+      : [];
+    return { pattern: rule.pattern as string, users, groups };
+  });
+}
 
 module.exports = (crowi: Crowi) => {
   const loginRequiredStrictly = loginRequiredFactory(crowi);
@@ -31,10 +53,13 @@ module.exports = (crowi: Crowi) => {
           'PageWritePermissionsConfig',
         ) as PageWritePermissionsConfigModel;
         const config = await Config.getConfig();
-        return res.json({ config });
+        return (res as any).apiv3({ config });
       } catch (err) {
         logger.error({ err }, 'Failed to fetch page write permissions config');
-        return res.status(500).json({ message: 'Internal server error' });
+        return (res as any).apiv3Err(
+          new ErrorV3('Internal server error', 'internal_server_error'),
+          500,
+        );
       }
     },
   );
@@ -50,19 +75,27 @@ module.exports = (crowi: Crowi) => {
       };
 
       if (!config?.rules || !Array.isArray(config.rules)) {
-        return res.status(400).json({ message: 'Invalid config format' });
+        return (res as any).apiv3Err(
+          new ErrorV3('Invalid config format', 'invalid_config'),
+          400,
+        );
       }
+
+      const sanitizedRules = sanitizeRules(config.rules);
 
       try {
         const Config = mongoose.model(
           'PageWritePermissionsConfig',
         ) as PageWritePermissionsConfigModel;
-        await Config.updateConfig(config as PageWritePermissionsConfig);
+        await Config.updateConfig({ rules: sanitizedRules });
         clearCache();
-        return res.json({ ok: true });
+        return (res as any).apiv3({ ok: true });
       } catch (err) {
         logger.error({ err }, 'Failed to update page write permissions config');
-        return res.status(500).json({ message: 'Internal server error' });
+        return (res as any).apiv3Err(
+          new ErrorV3('Internal server error', 'internal_server_error'),
+          500,
+        );
       }
     },
   );

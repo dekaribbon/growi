@@ -19,6 +19,7 @@ import type { HydratedDocument } from 'mongoose';
 import mongoose from 'mongoose';
 
 import { isAiEnabled } from '~/features/openai/server/services';
+import { isUserAllowedToWrite } from '~/features/page-write-permission/server/services';
 import { SupportedAction, SupportedTargetModel } from '~/interfaces/activity';
 import type { IApiv3PageCreateParams } from '~/interfaces/apiv3';
 import { subscribeRuleNames } from '~/interfaces/in-app-notification';
@@ -38,7 +39,6 @@ import { configManager } from '~/server/service/config-manager';
 import { getTranslation } from '~/server/service/i18next';
 import loggerFactory from '~/utils/logger';
 
-import { isUserAllowedToWrite } from '../../../../features/page-write-permission/server/services';
 import { apiV3FormValidator } from '../../../middlewares/apiv3-form-validator';
 import { excludeReadOnlyUser } from '../../../middlewares/exclude-read-only-user';
 import type { ApiV3Response } from '../interfaces/apiv3-response';
