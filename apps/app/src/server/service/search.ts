@@ -108,9 +108,9 @@ class SearchService implements SearchQueryParser, SearchResolver {
     instance.isErrorOccuredOnSearching = null;
 
     try {
-      instance.fullTextSearchDelegator =
-        instance.generateFullTextSearchDelegator();
-      if (instance.fullTextSearchDelegator != null) {
+      const delegator = instance.generateFullTextSearchDelegator();
+      if (delegator != null) {
+        instance.fullTextSearchDelegator = delegator;
         instance.nqDelegators = instance.generateNQDelegators(
           instance.fullTextSearchDelegator,
         );
