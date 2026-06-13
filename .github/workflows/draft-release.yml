@@ -16,6 +16,7 @@ jobs:
 
   # Refs: https://github.com/release-drafter/release-drafter
   update-release-draft:
+    if: github.repository_owner == 'growilabs'
     runs-on: ubuntu-latest
 
     outputs:
@@ -42,6 +43,7 @@ jobs:
 
   # Refs: https://github.com/bakunyo/git-pr-release-action
   update-release-pr:
+    if: github.repository_owner == 'growilabs'
     needs: update-release-draft
 
     runs-on: ubuntu-latest
