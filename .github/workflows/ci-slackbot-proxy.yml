@@ -63,7 +63,7 @@ jobs:
 
     - name: Slack Notification
       uses: weseek/ghaction-slack-notification@master
-      if: failure() && github.repository_owner == 'weseek'
+      if: failure() && github.repository_owner == 'growilabs'
       with:
         type: ${{ job.status }}
         job_name: '*Node CI for growi-bot-proxy - test (${{ matrix.node-version }})*'
@@ -138,7 +138,7 @@ jobs:
 
     - name: Slack Notification
       uses: weseek/ghaction-slack-notification@master
-      if: failure() && github.repository_owner == 'weseek'
+      if: failure() && github.repository_owner == 'growilabs'
       with:
         type: ${{ job.status }}
         job_name: '*Node CI for growi-bot-proxy - launch-dev (${{ matrix.node-version }})*'
@@ -230,7 +230,7 @@ jobs:
 
     - name: Slack Notification
       uses: weseek/ghaction-slack-notification@master
-      if: failure() && github.repository_owner == 'weseek'
+      if: failure() && github.repository_owner == 'growilabs'
       with:
         type: ${{ job.status }}
         job_name: '*Node CI for growi-bot-proxy - launch-prod (${{ matrix.node-version }})*'
