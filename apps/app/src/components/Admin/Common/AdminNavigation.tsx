@@ -112,6 +112,13 @@ const MenuLabel = ({ menu }: { menu: string }) => {
           {t('plugins.plugins')}
         </>
       );
+    case 'page-write-permissions':
+      return (
+        <>
+          <span className="material-symbols-outlined me-1">edit_note</span>
+          Page Write Permissions
+        </>
+      );
     // Temporarily hiding
     // case 'ai-integration':           return (
     //   <>{/* TODO: unify sizing of growi-custom-icons so that simplify code -- 2024.10.09 Yuki Takei */}
@@ -279,6 +286,11 @@ export const AdminNavigation = (): JSX.Element => {
             isListGroupItems={isListGroupItems}
             isActive={isActiveMenu('/plugins')}
           />
+          <MenuLink
+            menu="page-write-permissions"
+            isListGroupItems={isListGroupItems}
+            isActive={isActiveMenu('/page-write-permissions')}
+          />
           {/* Temporarily hiding */}
           {/* <MenuLink menu="ai-integration" isListGroupItems={isListGroupItems} isActive={isActiveMenu('/aai-integration')} /> */}
           <MenuLink
@@ -339,6 +351,7 @@ export const AdminNavigation = (): JSX.Element => {
             {isActiveMenu('/search') && <MenuLabel menu="search" />}
             {isActiveMenu('/audit-log') && <MenuLabel menu="audit-log" />}
             {isActiveMenu('/plugins') && <MenuLabel menu="plugins" />}
+            {isActiveMenu('/page-write-permissions') && <MenuLabel menu="page-write-permissions" />}
             {isActiveMenu('/data-transfer') && (
               <MenuLabel menu="data-transfer" />
             )}
