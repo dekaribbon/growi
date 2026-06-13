@@ -26,7 +26,7 @@ function validateRule(
 
 function sanitizeRules(rules: unknown[]): PageWritePermissionsConfig['rules'] {
   return rules.filter(validateRule).map((r) => {
-    const rule = r as Record<string, unknown>;
+    const rule = r as unknown as Record<string, unknown>;
     const users = Array.isArray(rule.users)
       ? rule.users.filter((u): u is string => typeof u === 'string')
       : [];
