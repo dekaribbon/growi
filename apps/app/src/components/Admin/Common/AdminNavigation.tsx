@@ -351,7 +351,9 @@ export const AdminNavigation = (): JSX.Element => {
             {isActiveMenu('/search') && <MenuLabel menu="search" />}
             {isActiveMenu('/audit-log') && <MenuLabel menu="audit-log" />}
             {isActiveMenu('/plugins') && <MenuLabel menu="plugins" />}
-            {isActiveMenu('/page-write-permissions') && <MenuLabel menu="page-write-permissions" />}
+            {isActiveMenu('/page-write-permissions') && (
+              <MenuLabel menu="page-write-permissions" />
+            )}
             {isActiveMenu('/data-transfer') && (
               <MenuLabel menu="data-transfer" />
             )}

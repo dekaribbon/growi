@@ -123,10 +123,11 @@ export const PageWritePermissions: React.FC = () => {
           </div>
           <div className="card-body">
             <div className="mb-2">
-              <label className="form-label">
+              <label className="form-label" htmlFor={`pattern-${index}`}>
                 Page Pattern
               </label>
               <input
+                id={`pattern-${index}`}
                 type="text"
                 className="form-control"
                 placeholder="/restricted/*"
@@ -138,10 +139,11 @@ export const PageWritePermissions: React.FC = () => {
               </small>
             </div>
             <div className="mb-2">
-              <label className="form-label">
+              <label className="form-label" htmlFor={`users-${index}`}>
                 Allowed Users
               </label>
               <input
+                id={`users-${index}`}
                 type="text"
                 className="form-control"
                 placeholder="username1, username2"
@@ -151,10 +153,11 @@ export const PageWritePermissions: React.FC = () => {
               <small className="form-text text-muted">Comma-separated usernames</small>
             </div>
             <div className="mb-2">
-              <label className="form-label">
+              <label className="form-label" htmlFor={`groups-${index}`}>
                 Allowed Groups
               </label>
               <input
+                id={`groups-${index}`}
                 type="text"
                 className="form-control"
                 placeholder="admin-group, editors"
