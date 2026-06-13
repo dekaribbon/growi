@@ -76,7 +76,7 @@ COPY --from=pruner $OPT_DIR/out/full/ .
 COPY tsconfig.base.json .
 
 # Build
-RUN turbo run clean
+RUN turbo run clean --continue || true
 RUN turbo run build --filter @growi/app
 
 # Produce artifacts
