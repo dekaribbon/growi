@@ -60,6 +60,7 @@ export const setupIndependentModels = async (): Promise<void> => {
     ),
     import('~/features/external-user-group/server/models/external-user-group'),
     import('~/features/growi-plugin/server/models'),
+    import('~/features/page-write-permission/server/models/page-write-permissions-config'),
     import('../models/activity'),
     import('../models/attachment'),
     import('../models/bookmark-folder'),

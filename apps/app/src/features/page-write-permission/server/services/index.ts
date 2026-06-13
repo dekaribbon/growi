@@ -3,18 +3,14 @@ import mongoose from 'mongoose';
 
 import loggerFactory from '~/utils/logger';
 
-const logger = loggerFactory('growi:features:page-write-permission');
+import type { PageWritePermissionsConfigModel } from '../models/page-write-permissions-config';
 
-const CONFIG_PAGE_PATH = '/page-write-permissions';
+const logger = loggerFactory('growi:features:page-write-permission');
 
 interface PermissionRule {
   pattern: string;
   users?: string[];
   groups?: string[];
-}
-
-interface ParsedConfig {
-  rules: PermissionRule[];
 }
 
 let cachedRules: PermissionRule[] | null = null;
@@ -29,41 +25,23 @@ function matchPattern(pattern: string, pagePath: string): boolean {
   return new RegExp(`^${regexStr}$`).test(pagePath);
 }
 
-async function fetchConfig(): Promise<PermissionRule[]> {
+async function fetchRules(): Promise<PermissionRule[]> {
   const now = Date.now();
   if (cachedRules !== null && now - cacheTimestamp < CACHE_TTL_MS) {
     return cachedRules;
   }
 
   try {
-    const Page = mongoose.model('Page') as any;
-    const page = await Page.findOne({ path: CONFIG_PAGE_PATH }).populate(
-      'revision',
-    );
-
-    if (!page?.revision?.body) {
-      cachedRules = [];
-      cacheTimestamp = now;
-      return [];
-    }
-
-    const body: string = page.revision.body;
-    const jsonMatch = body.match(/```(?:json)?\s*\n([\s\S]*?)\n```/);
-    if (!jsonMatch) {
-      cachedRules = [];
-      cacheTimestamp = now;
-      return [];
-    }
-
-    const parsed: ParsedConfig = JSON.parse(jsonMatch[1]);
-    const rules = (parsed?.rules ?? []).filter(
+    const Config = mongoose.model(
+      'PageWritePermissionsConfig',
+    ) as PageWritePermissionsConfigModel;
+    const config = await Config.getConfig();
+    cachedRules = config.rules.filter(
       (r: PermissionRule) =>
         typeof r.pattern === 'string' && r.pattern.length > 0,
     );
-
-    cachedRules = rules;
     cacheTimestamp = now;
-    return rules;
+    return cachedRules;
   }
   catch (err) {
     logger.warn({ err }, 'Failed to fetch page write permission config');
@@ -107,7 +85,7 @@ export async function isUserAllowedToWrite(
   pagePath: string,
   user: IUserHasId,
 ): Promise<boolean> {
-  const rules = await fetchConfig();
+  const rules = await fetchRules();
   if (rules.length === 0) return true;
 
   const rule = findMatchingRule(rules, pagePath);
