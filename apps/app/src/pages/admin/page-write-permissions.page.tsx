@@ -12,6 +12,7 @@ const PageWritePermissions = dynamic(
   () =>
     // biome-ignore lint/style/noRestrictedImports: no-problem dynamic import
     import(
+      // biome-ignore lint/style/noRestrictedImports: no-problem dynamic import
       '~/features/page-write-permission/client/components/PageWritePermissions'
     ).then((mod) => mod.PageWritePermissions),
   { ssr: false },

@@ -138,7 +138,7 @@ describe('useSWRxRef and useSWRxRefs integration tests', () => {
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
 
-    app.use((req, res, next) => {
+    app.use((_req, res, next) => {
       res.header('Access-Control-Allow-Origin', '*');
       res.header(
         'Access-Control-Allow-Methods',
@@ -152,8 +152,8 @@ describe('useSWRxRef and useSWRxRefs integration tests', () => {
     });
 
     const mockCrowi = {
-      loginRequiredFactory: () => (req: any, res: any, next: any) => next(),
-      accessTokenParser: () => (req: any, res: any, next: any) => {
+      loginRequiredFactory: () => (_req: any, _res: any, next: any) => next(),
+      accessTokenParser: () => (req: any, _res: any, next: any) => {
         req.user = { _id: '507f1f77bcf86cd799439012', username: 'testuser' };
         next();
       },
