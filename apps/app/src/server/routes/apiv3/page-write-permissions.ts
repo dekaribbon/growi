@@ -2,15 +2,14 @@ import { SCOPE } from '@growi/core/dist/interfaces';
 import express from 'express';
 import mongoose from 'mongoose';
 
+import type Crowi from '~/server/crowi';
 import { accessTokenParser } from '~/server/middlewares/access-token-parser';
 import adminRequired from '~/server/middlewares/admin-required';
 import loginRequiredFactory from '~/server/middlewares/login-required';
 import loggerFactory from '~/utils/logger';
 
-import { clearCache } from '../../features/page-write-permission/server/services';
 import type { PageWritePermissionsConfigModel } from '../../features/page-write-permission/server/models/page-write-permissions-config';
-
-import type Crowi from '~/server/crowi';
+import { clearCache } from '../../features/page-write-permission/server/services';
 
 const logger = loggerFactory('growi:routes:apiv3:page-write-permissions');
 
@@ -31,8 +30,7 @@ module.exports = (crowi: Crowi) => {
         ) as PageWritePermissionsConfigModel;
         const config = await Config.getConfig();
         return res.json({ config });
-      }
-      catch (err) {
+      } catch (err) {
         logger.error({ err }, 'Failed to fetch page write permissions config');
         return res.status(500).json({ message: 'Internal server error' });
       }
@@ -60,8 +58,7 @@ module.exports = (crowi: Crowi) => {
         await Config.updateConfig(config);
         clearCache();
         return res.json({ ok: true });
-      }
-      catch (err) {
+      } catch (err) {
         logger.error({ err }, 'Failed to update page write permissions config');
         return res.status(500).json({ message: 'Internal server error' });
       }

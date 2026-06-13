@@ -1,5 +1,5 @@
 import type { IUserHasId } from '@growi/core/dist/interfaces';
-import type { Request, Response, NextFunction } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import mongoose from 'mongoose';
 
 import { isUserAllowedToWrite } from '../services';
@@ -32,15 +32,12 @@ export async function pageWritePermissionForPageIdMiddleware(
 
     const allowed = await isUserAllowedToWrite(page.path as string, user);
     if (!allowed) {
-      res
-        .status(403)
-        .json({
-          message: 'You do not have permission to edit this page.',
-        });
+      res.status(403).json({
+        message: 'You do not have permission to edit this page.',
+      });
       return;
     }
-  }
-  catch {
+  } catch {
     res.status(500).json({ message: 'Internal server error' });
     return;
   }

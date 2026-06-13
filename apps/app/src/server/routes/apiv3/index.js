@@ -76,7 +76,10 @@ module.exports = (crowi, app) => {
   routerForAdmin.use('/activity', require('./activity')(crowi));
   routerForAdmin.use('/g2g-transfer', g2gTransfer(crowi));
   routerForAdmin.use('/plugins', growiPlugin(crowi));
-  routerForAdmin.use('/page-write-permissions', require('./page-write-permissions')(crowi));
+  routerForAdmin.use(
+    '/page-write-permissions',
+    require('./page-write-permissions')(crowi),
+  );
 
   // auth
   const applicationInstalled =

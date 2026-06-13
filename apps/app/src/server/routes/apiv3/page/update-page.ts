@@ -41,7 +41,6 @@ import { generalXssFilter } from '~/services/general-xss-filter';
 import loggerFactory from '~/utils/logger';
 
 import { pageWritePermissionForPageIdMiddleware } from '../../../../features/page-write-permission/server/middlewares';
-
 import { apiV3FormValidator } from '../../../middlewares/apiv3-form-validator';
 import { excludeReadOnlyUser } from '../../../middlewares/exclude-read-only-user';
 import type { ApiV3Response } from '../interfaces/apiv3-response';
@@ -284,7 +283,7 @@ export const updatePageHandlersFactory = (crowi: Crowi): RequestHandler[] => {
         // Normalize the latest revision which was borken by the migration script '20211227060705-revision-path-to-page-id-schema-migration--fixed-7549.js' provided by v6.1.0 - v7.0.15
         try {
           await normalizeLatestRevisionIfBroken(pageId);
-        } catch (err) {
+        } catch (_err) {
           logger.error('Error occurred in normalizing the latest revision');
         }
       }

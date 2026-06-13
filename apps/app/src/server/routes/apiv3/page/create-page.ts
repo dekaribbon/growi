@@ -39,7 +39,6 @@ import { getTranslation } from '~/server/service/i18next';
 import loggerFactory from '~/utils/logger';
 
 import { isUserAllowedToWrite } from '../../../../features/page-write-permission/server/services';
-
 import { apiV3FormValidator } from '../../../middlewares/apiv3-form-validator';
 import { excludeReadOnlyUser } from '../../../middlewares/exclude-read-only-user';
 import type { ApiV3Response } from '../interfaces/apiv3-response';
@@ -332,12 +331,9 @@ export const createPageHandlersFactory = (crowi: Crowi): RequestHandler[] => {
 
       const isAllowed = await isUserAllowedToWrite(pathToCreate, req.user);
       if (!isAllowed) {
-        return res
-          .status(403)
-          .json({
-            message:
-              'You do not have permission to create a page at this path.',
-          });
+        return res.status(403).json({
+          message: 'You do not have permission to create a page at this path.',
+        });
       }
 
       const { body, tags } = await determineBodyAndTags(

@@ -1,5 +1,5 @@
 import type { Document, Model } from 'mongoose';
-import mongoose, { Schema } from 'mongoose';
+import { Schema } from 'mongoose';
 
 import { getOrCreateModel } from '~/server/util/mongoose-utils';
 
@@ -14,7 +14,8 @@ export interface PageWritePermissionsConfig {
 }
 
 export interface PageWritePermissionsConfigDocument
-  extends PageWritePermissionsConfig, Document {}
+  extends PageWritePermissionsConfig,
+    Document {}
 
 export interface PageWritePermissionsConfigModel
   extends Model<PageWritePermissionsConfigDocument> {
@@ -43,10 +44,11 @@ const schema = new Schema<
   { timestamps: true },
 );
 
-schema.statics.getConfig = async function (): Promise<PageWritePermissionsConfig> {
-  const doc = await this.findOne({ key: KEY }).lean();
-  return { rules: doc?.rules ?? [] };
-};
+schema.statics.getConfig =
+  async function (): Promise<PageWritePermissionsConfig> {
+    const doc = await this.findOne({ key: KEY }).lean();
+    return { rules: doc?.rules ?? [] };
+  };
 
 schema.statics.updateConfig = async function (
   config: PageWritePermissionsConfig,

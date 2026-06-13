@@ -42,8 +42,7 @@ async function fetchRules(): Promise<PermissionRule[]> {
     );
     cacheTimestamp = now;
     return cachedRules;
-  }
-  catch (err) {
+  } catch (err) {
     logger.warn({ err }, 'Failed to fetch page write permission config');
     cachedRules = [];
     cacheTimestamp = now;
@@ -75,8 +74,7 @@ async function getUserGroupNames(user: IUserHasId): Promise<string[]> {
 
     const groups = await UserGroup.find({ _id: { $in: groupIds } }).lean();
     return groups.map((g: any) => g.name).filter(Boolean);
-  }
-  catch {
+  } catch {
     return [];
   }
 }
