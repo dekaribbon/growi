@@ -1,4 +1,4 @@
-import type { IPage, IPageHasId, IUser } from '@growi/core';
+import type { IPage, IPageHasId } from '@growi/core';
 import { serializeUserSecurely } from '@growi/core/dist/models/serializers';
 import mongoose from 'mongoose';
 import { FilterXSS } from 'xss';
@@ -61,7 +61,7 @@ const normalizeNQName = (nqName: string): string => {
   return nqName.trim();
 };
 
-const findPageListByIds = async (pageIds: ObjectIdLike[], crowi: any) => {
+const findPageListByIds = async (pageIds: ObjectIdLike[], _crowi: any) => {
   const Page = mongoose.model<IPage, PageModel>('Page');
 
   const builder = new Page.PageQueryBuilder(
@@ -108,16 +108,16 @@ class SearchService implements SearchQueryParser, SearchResolver {
     instance.isErrorOccuredOnSearching = null;
 
     try {
-      const tmpFullTextSearchDelegator =
-        instance.generateFullTextSearchDelegator();
-      if (tmpFullTextSearchDelegator == null) {
-        throw new Error('Failed to initialize search delegator');
+      const delegator = instance.generateFullTextSearchDelegator();
+      if (delegator != null) {
+        instance.fullTextSearchDelegator = delegator;
+        instance.nqDelegators = instance.generateNQDelegators(
+          instance.fullTextSearchDelegator,
+        );
+        logger.info('Succeeded to initialize search delegators');
+      } else {
+        instance.nqDelegators = {} as typeof instance.nqDelegators;
       }
-      instance.fullTextSearchDelegator = tmpFullTextSearchDelegator;
-      instance.nqDelegators = instance.generateNQDelegators(
-        instance.fullTextSearchDelegator,
-      );
-      logger.info('Succeeded to initialize search delegators');
     } catch (err) {
       logger.error(err);
     }
@@ -288,15 +288,10 @@ class SearchService implements SearchQueryParser, SearchResolver {
   async reconnectClient() {
     logger.info('Try to reconnect...');
     this.fullTextSearchDelegator.initClient();
+    await this.getInfoForHealth();
 
-    try {
-      await this.getInfoForHealth();
-
-      logger.info('Reconnecting succeeded.');
-      this.resetErrorStatus();
-    } catch (err) {
-      throw err;
-    }
+    logger.info('Reconnecting succeeded.');
+    this.resetErrorStatus();
   }
 
   async getInfo() {
@@ -532,7 +527,7 @@ class SearchService implements SearchQueryParser, SearchResolver {
   // TODO: optimize the way to check isFormattable e.g. check data schema of searchResult
   // So far, it determines by delegatorName passed by searchService.searchKeyword
   checkIsFormattable(
-    searchResult,
+    _searchResult,
     delegatorName: SearchDelegatorName,
   ): boolean {
     return delegatorName === SearchDelegatorName.DEFAULT;
@@ -589,8 +584,7 @@ class SearchService implements SearchQueryParser, SearchResolver {
 
         // add tags and seenUserCount to pageData
         pageData._doc.tags = data._source.tag_names;
-        pageData._doc.seenUserCount =
-          (pageData.seenUsers && pageData.seenUsers.length) || 0;
+        pageData._doc.seenUserCount = pageData.seenUsers?.length || 0;
 
         // serialize lastUpdateUser
         if (
