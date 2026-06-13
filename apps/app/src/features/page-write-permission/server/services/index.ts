@@ -5,7 +5,7 @@ import loggerFactory from '~/utils/logger';
 
 const logger = loggerFactory('growi:features:page-write-permission');
 
-const CONFIG_PAGE_PATH = '/plugin/page-permissions';
+const CONFIG_PAGE_PATH = '/admin/page-write-permissions';
 
 interface PermissionRule {
   pattern: string;
