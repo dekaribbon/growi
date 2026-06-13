@@ -115,6 +115,8 @@ class SearchService implements SearchQueryParser, SearchResolver {
           instance.fullTextSearchDelegator,
         );
         logger.info('Succeeded to initialize search delegators');
+      } else {
+        instance.nqDelegators = {} as typeof instance.nqDelegators;
       }
     } catch (err) {
       logger.error(err);
