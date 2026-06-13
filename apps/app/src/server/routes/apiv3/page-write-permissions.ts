@@ -2,7 +2,7 @@ import { SCOPE } from '@growi/core/dist/interfaces';
 import express from 'express';
 import mongoose from 'mongoose';
 
-import type { PageWritePermissionsConfigModel } from '~/features/page-write-permission/server/models/page-write-permissions-config';
+import type { PageWritePermissionsConfig, PageWritePermissionsConfigModel } from '~/features/page-write-permission/server/models/page-write-permissions-config';
 import { clearCache } from '~/features/page-write-permission/server/services';
 import type Crowi from '~/server/crowi';
 import { accessTokenParser } from '~/server/middlewares/access-token-parser';
@@ -54,7 +54,7 @@ module.exports = (crowi: Crowi) => {
         const Config = mongoose.model(
           'PageWritePermissionsConfig',
         ) as PageWritePermissionsConfigModel;
-        await Config.updateConfig(config);
+        await Config.updateConfig(config as PageWritePermissionsConfig);
         clearCache();
         return res.json({ ok: true });
       } catch (err) {
