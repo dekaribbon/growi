@@ -20,7 +20,7 @@ function validateRule(
   rule: unknown,
 ): rule is PageWritePermissionsConfig['rules'][number] {
   if (rule == null || typeof rule !== 'object') return false;
-  const r = rule as Record<string, unknown>;
+  const r = rule as unknown as Record<string, unknown>;
   return typeof r.pattern === 'string' && r.pattern.length > 0;
 }
 
