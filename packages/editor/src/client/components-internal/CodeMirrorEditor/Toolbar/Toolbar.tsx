@@ -30,29 +30,37 @@ export const Toolbar = memo((props: Props): JSX.Element => {
   }, []);
 
   return (
-    <div
-      className={`d-flex gap-2 py-1 px-2 px-md-3 border-top ${styles['codemirror-editor-toolbar']} align-items-center`}
-    >
-      <AttachmentsDropup
-        editorKey={editorKey}
-        onUpload={onUpload}
-        acceptedUploadFileType={acceptedUploadFileType}
-      />
-      <div className="flex-grow-1">
-        <SimpleBar ref={simpleBarRef} autoHide style={{ overflowY: 'hidden' }}>
-          <div className="d-flex gap-2">
-            <TextFormatTools
-              editorKey={editorKey}
-              onTextFormatToolsCollapseChange={onTextFormatToolsCollapseChange}
-            />
-            <EmojiButton editorKey={editorKey} />
-            <TableButton editorKey={editorKey} />
-            <DiagramButton editorKey={editorKey} />
-            <TemplateButton editorKey={editorKey} />
-            <EditorGuideButton />
-          </div>
-        </SimpleBar>
+    <>
+      <div
+        className={`d-flex gap-2 py-1 px-2 px-md-3 border-top ${styles['codemirror-editor-toolbar']} align-items-center`}
+      >
+        <AttachmentsDropup
+          editorKey={editorKey}
+          onUpload={onUpload}
+          acceptedUploadFileType={acceptedUploadFileType}
+        />
+        <div className="flex-grow-1">
+          <SimpleBar
+            ref={simpleBarRef}
+            autoHide
+            style={{ overflowY: 'hidden' }}
+          >
+            <div className="d-flex gap-2">
+              <TextFormatTools
+                editorKey={editorKey}
+                onTextFormatToolsCollapseChange={
+                  onTextFormatToolsCollapseChange
+                }
+              />
+              <EmojiButton editorKey={editorKey} />
+              <TableButton editorKey={editorKey} />
+              <DiagramButton editorKey={editorKey} />
+              <TemplateButton editorKey={editorKey} />
+              <EditorGuideButton />
+            </div>
+          </SimpleBar>
+        </div>
       </div>
-    </div>
+    </>
   );
 });

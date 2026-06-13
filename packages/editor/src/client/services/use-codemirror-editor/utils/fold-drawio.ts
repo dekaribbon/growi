@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { foldEffect } from '@codemirror/language';
 import type { EditorView } from '@codemirror/view';
 
-export type FoldDrawio = undefined;
+export type FoldDrawio = void;
 
 const findAllDrawioSection = (view?: EditorView) => {
   if (view == null) {

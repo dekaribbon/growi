@@ -3,7 +3,6 @@ import type { Data, Parent, PhrasingContent } from 'mdast';
 import { DirectiveType as DirectiveTypeObject } from './lib/index.js';
 
 export { directiveFromMarkdown, directiveToMarkdown } from './lib/index.js';
-
 export { DirectiveTypeObject };
 
 type DirectiveType = typeof DirectiveTypeObject;

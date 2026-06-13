@@ -78,7 +78,7 @@ describe('useSWRxLsx integration tests', () => {
     app.use(express.urlencoded({ extended: true }));
 
     // Add CORS headers to prevent cross-origin issues
-    app.use((_req, res, next) => {
+    app.use((req, res, next) => {
       res.header('Access-Control-Allow-Origin', '*');
       res.header(
         'Access-Control-Allow-Methods',
@@ -93,8 +93,8 @@ describe('useSWRxLsx integration tests', () => {
 
     // Mock minimal GROWI-like structure for the middleware
     const mockCrowi = {
-      loginRequiredFactory: () => (_req: any, _res: any, next: any) => next(),
-      accessTokenParser: () => (req: any, _res: any, next: any) => {
+      loginRequiredFactory: () => (req: any, res: any, next: any) => next(),
+      accessTokenParser: () => (req: any, res: any, next: any) => {
         req.user = { _id: '507f1f77bcf86cd799439012', username: 'testuser' };
         next();
       },
