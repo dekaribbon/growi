@@ -190,6 +190,16 @@
     {
       "includes": ["apps/app/src/server/models/**"],
       "plugins": ["apps/app/src/server/models/.biome/plugins/no-populate.grit"]
+    },
+    {
+      "includes": ["**/*.svg"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "noSvgWithoutTitle": "off"
+          }
+        }
+      }
     }
   ]
 }
