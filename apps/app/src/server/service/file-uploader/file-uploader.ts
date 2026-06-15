@@ -100,13 +100,27 @@ export abstract class AbstractFileUploader implements FileUploader {
         contentType: 'text/plain',
         data,
       });
-      // TODO: delete tmp file in background
+
+      this.deleteTmpFile(filePath).catch((err) => {
+        logger.warn(
+          `Failed to delete tmp file in background: ${filePath}`,
+          err,
+        );
+      });
 
       return true;
     } catch (err) {
       logger.error(err);
       return false;
     }
+  }
+
+  /**
+   * Delete a temporary file created by isWritable.
+   * Override in subclasses to implement backend-specific deletion.
+   */
+  deleteTmpFile(filePath: string): Promise<void> {
+    throw new Error('deleteTmpFile must be implemented by subclass');
   }
 
   // File reading is possible even if uploading is disabled
