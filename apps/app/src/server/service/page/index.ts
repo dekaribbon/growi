@@ -2,6 +2,7 @@ import {
   getIdForRef,
   getIdStringForRef,
   PageStatus,
+  type PageWriteGrant,
   YDocStatus,
 } from '@growi/core';
 import type {
@@ -85,11 +86,13 @@ import { configManager } from '../config-manager';
 import type { IPageGrantService } from '../page-grant';
 import { preNotifyService } from '../pre-notify';
 import { getYjsService } from '../yjs';
+import { canEditPage } from './can-edit';
 import { BULK_REINDEX_SIZE, LIMIT_FOR_MULTIPLE_PAGE_OP } from './consts';
 import { onSeen } from './events/seen';
 import type { IPageService } from './page-service';
 import { shouldUseV4Process } from './should-use-v4-process';
 
+export * from './can-edit';
 export * from './page-service';
 
 const logger = loggerFactory('growi:services:page');
@@ -376,6 +379,14 @@ class PageService implements IPageService {
       singleAuthority,
       recursiveAuthority,
     );
+  }
+
+  canEdit(
+    page: PageDocument,
+    operator: { _id: ObjectIdLike; admin?: boolean; readOnly?: boolean } | null,
+    userRelatedGroups: PopulatedGrantedGroup[] = [],
+  ): boolean {
+    return canEditPage({ user: operator, page, userRelatedGroups });
   }
 
   canDeleteUserHomepageByConfig(): boolean {
@@ -3294,12 +3305,16 @@ class PageService implements IPageService {
         isV5Compatible: true,
         isEmpty: true,
         isMovable,
+        isEditable: false,
         isRevertible: false,
       } satisfies IPageInfoBasicForEmpty;
     }
 
     const likers = page.liker.slice(0, 15) as Ref<IUserHasId>[];
     const seenUsers = page.seenUsers.slice(0, 15) as Ref<IUserHasId>[];
+
+    // Basic check without user context; full check with groups is done in findPageAndMetaDataByViewer
+    const isEditableBasic = !isGuestUser;
 
     const infoForEntity = {
       isNotFound: false,
@@ -3310,6 +3325,7 @@ class PageService implements IPageService {
       seenUserIds: this.extractStringIds(seenUsers),
       sumOfSeenUsers: page.seenUsers.length,
       isMovable,
+      isEditable: isEditableBasic,
       isRevertible: isTrashPage(page.path),
       contentAge: page.getContentAge(),
       descendantCount: page.descendantCount,
@@ -4804,6 +4820,15 @@ class PageService implements IPageService {
       grantUserGroupIds,
     };
 
+    // Determine write grant data
+    const WRITE_GRANT_PUBLIC = 1;
+    const writeGrant =
+      options.writeGrant ?? closestAncestor?.writeGrant ?? WRITE_GRANT_PUBLIC;
+    const writeGrantUserGroupIds =
+      options.writeGrantUserGroupIds ??
+      closestAncestor?.writeGrantedGroups ??
+      [];
+
     const isGrantRestricted = grant === PageGrant.GRANT_RESTRICTED;
 
     // Validate
@@ -4827,7 +4852,13 @@ class PageService implements IPageService {
     this.setFieldExceptForGrantRevisionParent(page, path, user);
 
     // Apply scope
-    page.applyScope(user, grant, grantUserGroupIds);
+    page.applyScope(
+      user,
+      grant,
+      grantUserGroupIds,
+      writeGrant,
+      writeGrantUserGroupIds,
+    );
 
     // Set parent
     if (isTopPage(path) || isGrantRestricted) {
@@ -4953,7 +4984,16 @@ class PageService implements IPageService {
       page.expandContentWidth = expandContentWidth;
     }
     await this.validateAppliedScope(user, grant, grantUserGroupIds);
-    page.applyScope(user, grant, grantUserGroupIds);
+    const WRITE_GRANT_PUBLIC = 1;
+    const writeGrant = options.writeGrant ?? WRITE_GRANT_PUBLIC;
+    const writeGrantUserGroupIds = options.writeGrantUserGroupIds ?? [];
+    page.applyScope(
+      user,
+      grant,
+      grantUserGroupIds,
+      writeGrant,
+      writeGrantUserGroupIds,
+    );
 
     let savedPage = await page.save();
     const newRevision = Revision.prepareRevision(
@@ -5059,7 +5099,16 @@ class PageService implements IPageService {
     this.setFieldExceptForGrantRevisionParent(page, pathSanitized);
 
     // Apply scope
-    page.applyScope({ _id: grantUserIds?.[0] }, grant, grantUserGroupIds);
+    const WRITE_GRANT_PUBLIC = 1;
+    const writeGrant = options.writeGrant ?? WRITE_GRANT_PUBLIC;
+    const writeGrantUserGroupIds = options.writeGrantUserGroupIds ?? [];
+    page.applyScope(
+      { _id: grantUserIds?.[0] },
+      grant,
+      grantUserGroupIds,
+      writeGrant,
+      writeGrantUserGroupIds,
+    );
 
     // Set parent
     if (isTopPage(pathSanitized) || isGrantRestricted) {
@@ -5121,6 +5170,28 @@ class PageService implements IPageService {
     const options: IOptionsForUpdate = {
       grant,
       userRelatedGrantUserGroupIds: userRelatedGrantedGroups,
+    };
+
+    return this.updatePage(page, null, null, user, options);
+  }
+
+  /**
+   * A wrapper method of updatePage for updating write grant only.
+   */
+  async updateWriteGrant(
+    page: HydratedDocument<PageDocument>,
+    user: IUserHasId,
+    writeGrantData: {
+      writeGrant: PageWriteGrant;
+      writeGrantUserGroupIds?: IGrantedGroup[];
+    },
+  ): Promise<PageDocument> {
+    const { writeGrant: newWriteGrant, writeGrantUserGroupIds } =
+      writeGrantData;
+
+    const options: IOptionsForUpdate = {
+      writeGrant: newWriteGrant,
+      writeGrantUserGroupIds,
     };
 
     return this.updatePage(page, null, null, user, options);
@@ -5236,6 +5307,13 @@ class PageService implements IPageService {
       'Page',
     );
 
+    // Check write grant permission
+    const userRelatedGroupsForEdit =
+      await this.pageGrantService.getUserRelatedGroups(user);
+    if (!this.canEdit(pageData, user, userRelatedGroupsForEdit)) {
+      throw new Error('This page is not editable for the user');
+    }
+
     const wasOnTree = pageData.parent != null || isTopPage(pageData.path);
     const isV5Compatible = configManager.getConfig('app:isV5Compatible');
 
@@ -5272,6 +5350,15 @@ class PageService implements IPageService {
             user,
           )
         : clonedPageData.grantedGroups;
+
+    // use the previous data if absent for write grant
+    const WRITE_GRANT_PUBLIC = 1;
+    const writeGrant =
+      options.writeGrant ?? clonedPageData.writeGrant ?? WRITE_GRANT_PUBLIC;
+    const writeGrantUserGroupIds =
+      options.writeGrantUserGroupIds != null
+        ? options.writeGrantUserGroupIds
+        : clonedPageData.writeGrantedGroups;
 
     const grantedUserIds = clonedPageData.grantedUserIds || [user._id];
     const shouldBeOnTree = grant !== PageGrant.GRANT_RESTRICTED;
@@ -5364,7 +5451,13 @@ class PageService implements IPageService {
       newPageData.descendantCount = 0;
     }
 
-    newPageData.applyScope(user, grant, grantUserGroupIds);
+    newPageData.applyScope(
+      user,
+      grant,
+      grantUserGroupIds,
+      writeGrant,
+      writeGrantUserGroupIds,
+    );
 
     // update existing page
     let savedPage = await newPageData.save();
@@ -5455,6 +5548,15 @@ class PageService implements IPageService {
           )
         : pageData.grantedGroups;
 
+    // use the previous data if absent for write grant
+    const WRITE_GRANT_PUBLIC = 1;
+    const writeGrant =
+      options.writeGrant ?? pageData.writeGrant ?? WRITE_GRANT_PUBLIC;
+    const writeGrantUserGroupIds =
+      options.writeGrantUserGroupIds != null
+        ? options.writeGrantUserGroupIds
+        : pageData.writeGrantedGroups;
+
     // validate multiple group grant before save using pageData and options
     await this.pageGrantService.validateGrantChange(
       user,
@@ -5464,7 +5566,13 @@ class PageService implements IPageService {
     );
 
     await this.validateAppliedScope(user, grant, grantUserGroupIds);
-    pageData.applyScope(user, grant, grantUserGroupIds);
+    pageData.applyScope(
+      user,
+      grant,
+      grantUserGroupIds,
+      writeGrant,
+      writeGrantUserGroupIds,
+    );
 
     // update existing page
     let savedPage = await pageData.save();
@@ -5564,6 +5672,20 @@ class PageService implements IPageService {
     } catch (err) {
       logger.error('Failed to create TTL Index', err);
       throw err;
+    }
+  }
+
+  async recountAllDescendantCounts(): Promise<void> {
+    const Page = mongoose.model<IPage, PageModel>('Page');
+
+    const parentIds = await Page.aggregate([
+      { $match: { parent: { $ne: null } } },
+      { $group: { _id: '$parent' } },
+      { $project: { _id: 1 } },
+    ]);
+
+    for (const { _id } of parentIds) {
+      await Page.normalizeDescendantCountById(_id);
     }
   }
 }

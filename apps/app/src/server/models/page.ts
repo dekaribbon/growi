@@ -56,6 +56,9 @@ const GRANT_RESTRICTED = 2;
 const GRANT_SPECIFIED = 3; // DEPRECATED
 const GRANT_OWNER = 4;
 const GRANT_USER_GROUP = 5;
+const WRITE_GRANT_PUBLIC = 1;
+const WRITE_GRANT_OWNER = 2;
+const WRITE_GRANT_USER_GROUP = 4;
 const PAGE_GRANT_ERROR = 1;
 const STATUS_PUBLISHED = 'published';
 const STATUS_DELETED = 'deleted';
@@ -198,6 +201,9 @@ export interface PageModel extends Model<PageDocument> {
   GRANT_SPECIFIED;
   GRANT_OWNER;
   GRANT_USER_GROUP;
+  WRITE_GRANT_PUBLIC;
+  WRITE_GRANT_OWNER;
+  WRITE_GRANT_USER_GROUP;
   PAGE_GRANT_ERROR;
   STATUS_PUBLISHED;
   STATUS_DELETED;
@@ -247,6 +253,36 @@ const schema = new Schema<PageDocument, PageModel>(
           return arr.length === uniqueItemValues.size;
         },
         'grantedGroups contains non unique item',
+      ],
+      default: [],
+      required: true,
+    },
+    writeGrant: { type: Number, default: WRITE_GRANT_PUBLIC, index: true },
+    writeGrantedUsers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    writeGrantedGroups: {
+      type: [
+        {
+          type: {
+            type: String,
+            enum: Object.values(GroupType),
+            required: true,
+            default: 'UserGroup',
+          },
+          item: {
+            type: Schema.Types.ObjectId,
+            refPath: 'writeGrantedGroups.type',
+            required: true,
+            index: true,
+          },
+        },
+      ],
+      validate: [
+        (arr) => {
+          if (arr == null) return true;
+          const uniqueItemValues = new Set(arr.map((e) => e.item));
+          return arr.length === uniqueItemValues.size;
+        },
+        'writeGrantedGroups contains non unique item',
       ],
       default: [],
       required: true,
@@ -1208,7 +1244,18 @@ schema.statics.removeLeafEmptyPagesRecursively = async function (
 
   const pageIdsToRemove = await generatePageIdsToRemove(null, initialPage);
 
+  if (pageIdsToRemove.length === 0) return;
+
+  const shallowestPage = await this.findById(
+    pageIdsToRemove[pageIdsToRemove.length - 1],
+  ).select('parent');
+  const parentId = shallowestPage?.parent;
+
   await this.deleteMany({ _id: { $in: pageIdsToRemove } });
+
+  if (parentId != null) {
+    await this.incrementDescendantCountOfPageIds([parentId], -1);
+  }
 };
 
 schema.statics.normalizeDescendantCountById = async function (pageId) {
@@ -1234,15 +1281,29 @@ schema.statics.removeEmptyPages = async function (
   pageIdsToNotRemove: ObjectIdLike[],
   paths: string[],
 ): Promise<void> {
-  await this.deleteMany({
-    _id: {
-      $nin: pageIdsToNotRemove,
-    },
-    path: {
-      $in: paths,
-    },
+  const pagesToRemove = await this.find({
+    _id: { $nin: pageIdsToNotRemove },
+    path: { $in: paths },
     isEmpty: true,
+  }).select('_id parent');
+
+  if (pagesToRemove.length === 0) return;
+
+  const parentCountMap = new Map<string, number>();
+  for (const p of pagesToRemove) {
+    const parentId = p.parent?.toString();
+    if (parentId != null) {
+      parentCountMap.set(parentId, (parentCountMap.get(parentId) ?? 0) + 1);
+    }
+  }
+
+  await this.deleteMany({
+    _id: { $in: pagesToRemove.map((p) => p._id) },
   });
+
+  for (const [parentId, count] of parentCountMap) {
+    await this.incrementDescendantCountOfPageIds([parentId], -count);
+  }
 };
 
 /**
