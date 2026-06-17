@@ -406,6 +406,13 @@ module.exports = (crowi: Crowi) => {
     return;
   };
 
+  lib.deleteTmpFile = async (filePath: string) => {
+    const containerClient = await getContainerClient();
+    const blockBlobClient: BlockBlobClient =
+      containerClient.getBlockBlobClient(filePath);
+    await blockBlobClient.deleteIfExists();
+  };
+
   (lib as any).listFiles = async () => {
     if (!lib.getIsReadable()) {
       throw new Error('Azure is not configured.');

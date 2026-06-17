@@ -461,6 +461,18 @@ module.exports = (crowi: Crowi) => {
     );
   };
 
+  lib.deleteTmpFile = async (filePath: string) => {
+    const s3 = S3Factory();
+    const params = { Bucket: getS3Bucket(), Key: filePath };
+
+    const isExists = await isFileExists(s3, params);
+    if (!isExists) {
+      return;
+    }
+
+    await s3.send(new DeleteObjectCommand(params));
+  };
+
   /**
    * List files in storage
    */
