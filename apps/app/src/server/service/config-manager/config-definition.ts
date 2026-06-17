@@ -62,6 +62,9 @@ export const CONFIG_KEYS = [
   'app:elasticsearchMaxBodyLengthToIndex',
   'app:elasticsearchReindexBulkSize',
   'app:elasticsearchReindexOnBoot',
+  'app:meilisearchUri',
+  'app:meilisearchApiKey',
+  'app:meilisearchReindexBulkSize',
   'app:growiCloudUri',
   'app:growiAppIdForCloud',
   'app:ogpUri',
@@ -465,6 +468,18 @@ export const CONFIG_DEFINITIONS = {
   'app:elasticsearchReindexOnBoot': defineConfig<boolean>({
     envVarName: 'ELASTICSEARCH_REINDEX_ON_BOOT',
     defaultValue: false,
+  }),
+  'app:meilisearchUri': defineConfig<string | undefined>({
+    envVarName: 'MEILISEARCH_URI',
+    defaultValue: undefined,
+  }),
+  'app:meilisearchApiKey': defineConfig<string | undefined>({
+    envVarName: 'MEILISEARCH_API_KEY',
+    defaultValue: undefined,
+  }),
+  'app:meilisearchReindexBulkSize': defineConfig<number>({
+    envVarName: 'MEILISEARCH_REINDEX_BULK_SIZE',
+    defaultValue: 100,
   }),
   'app:growiCloudUri': defineConfig<string | undefined>({
     envVarName: 'GROWI_CLOUD_URI',

@@ -5,10 +5,12 @@ import { SearchDelegatorName } from '~/interfaces/named-query';
 import type Crowi from '~/server/crowi';
 import { configManager } from '~/server/service/config-manager/config-manager';
 
-import type { SearchDelegator } from '../interfaces/search';
+import type {
+  FullTextSearchDelegator,
+  SearchDelegator,
+} from '../interfaces/search';
 import NamedQuery from '../models/named-query';
 import SearchService from './search';
-import type ElasticsearchDelegator from './search-delegator/elasticsearch';
 
 // Mock NamedQuery
 vi.mock('~/server/models/named-query', () => {
@@ -39,8 +41,10 @@ class TestSearchService extends SearchService {
     this.crowi = crowi;
   }
 
-  override generateFullTextSearchDelegator(): ElasticsearchDelegator {
-    return mock<ElasticsearchDelegator>();
+  override generateFullTextSearchDelegator():
+    | FullTextSearchDelegator
+    | undefined {
+    return mock<FullTextSearchDelegator>();
   }
 
   override generateNQDelegators(): {

@@ -2,18 +2,18 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useAtomValue } from 'jotai';
 import { useTranslation } from 'next-i18next';
 
+import NormalizeIndicesControls from '~/client/components/Admin/ElasticsearchManagement/NormalizeIndicesControls';
+import RebuildIndexControls from '~/client/components/Admin/ElasticsearchManagement/RebuildIndexControls';
+import ReconnectControls from '~/client/components/Admin/ElasticsearchManagement/ReconnectControls';
 import { apiv3Get, apiv3Post, apiv3Put } from '~/client/util/apiv3-client';
 import { toastError, toastSuccess } from '~/client/util/toastr';
 import { useAdminSocket } from '~/features/admin/states/socket-io';
 import { SocketEventName } from '~/interfaces/websocket';
 import { isSearchServiceReachableAtom } from '~/states/server-configurations';
 
-import NormalizeIndicesControls from './NormalizeIndicesControls';
-import RebuildIndexControls from './RebuildIndexControls';
-import ReconnectControls from './ReconnectControls';
-import StatusTable from './StatusTable';
+import MeilisearchStatusTable from './MeilisearchStatusTable.jsx';
 
-const ElasticsearchManagement = (): JSX.Element => {
+const MeilisearchManagement = (): JSX.Element => {
   const { t } = useTranslation('admin');
   const isSearchServiceReachable = useAtomValue(isSearchServiceReachableAtom);
   const socket = useAdminSocket();
@@ -27,8 +27,7 @@ const ElasticsearchManagement = (): JSX.Element => {
   const [isRebuildingCompleted, setIsRebuildingCompleted] = useState(false);
 
   const [isNormalized, setIsNormalized] = useState(false);
-  const [indicesData, setIndicesData] = useState(null);
-  const [aliasesData, setAliasesData] = useState(null);
+  const [documentCount, setDocumentCount] = useState<number | null>(null);
 
   const retrieveIndicesStatus = useCallback(async () => {
     try {
@@ -38,9 +37,8 @@ const ElasticsearchManagement = (): JSX.Element => {
       setIsConnected(true);
       setIsConfigured(true);
 
-      setIndicesData(info.indices);
-      setAliasesData(info.aliases);
-      setIsNormalized(info.isNormalized);
+      setDocumentCount(info.documentCount ?? null);
+      setIsNormalized(info.isNormalized ?? true);
 
       return info.isNormalized;
     } catch (errors: unknown) {
@@ -152,14 +150,13 @@ const ElasticsearchManagement = (): JSX.Element => {
     <>
       <div className="row">
         <div className="col-md-12">
-          <StatusTable
+          <MeilisearchStatusTable
             isInitialized={isInitialized}
             isErrorOccuredOnSearchService={isErrorOccuredOnSearchService}
             isConnected={isConnected}
             isConfigured={isConfigured}
             isNormalized={isNormalized}
-            indicesData={indicesData}
-            aliasesData={aliasesData}
+            documentCount={documentCount}
           />
         </div>
       </div>
@@ -213,4 +210,4 @@ const ElasticsearchManagement = (): JSX.Element => {
   );
 };
 
-export default ElasticsearchManagement;
+export default MeilisearchManagement;

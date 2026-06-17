@@ -107,7 +107,7 @@
       }
     },
     {
-      "includes": ["bin/**"],
+      "includes": ["bin/**", "apps/app/src/features/benchmark/**/scripts/**"],
       "linter": {
         "rules": {
           "suspicious": {

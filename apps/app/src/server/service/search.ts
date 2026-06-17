@@ -21,6 +21,7 @@ import loggerFactory from '~/utils/logger';
 import type Crowi from '../crowi';
 import type { ObjectIdLike } from '../interfaces/mongoose-utils';
 import type {
+  FullTextSearchDelegator,
   ParsedQuery,
   QueryTerms,
   SearchableData,
@@ -34,6 +35,7 @@ import { SearchError } from '../models/vo/search-error';
 import { hasIntersection } from '../util/compare-objectId';
 import { configManager } from './config-manager';
 import ElasticsearchDelegator from './search-delegator/elasticsearch';
+import MeilisearchDelegator from './search-delegator/meilisearch';
 import PrivateLegacyPagesDelegator from './search-delegator/private-legacy-pages';
 
 const logger = loggerFactory('growi:service:search');
@@ -95,9 +97,9 @@ class SearchService implements SearchQueryParser, SearchResolver {
 
   isErrorOccuredOnSearching: boolean | null;
 
-  fullTextSearchDelegator: ElasticsearchDelegator;
+  fullTextSearchDelegator!: FullTextSearchDelegator;
 
-  nqDelegators: { [key in SearchDelegatorName]: SearchDelegator };
+  nqDelegators!: { [key in SearchDelegatorName]: SearchDelegator };
 
   static async create(crowi: Crowi) {
     const instance = new SearchService();
@@ -143,11 +145,27 @@ class SearchService implements SearchQueryParser, SearchResolver {
 
   get isElasticsearchEnabled() {
     const uri = configManager.getConfig('app:elasticsearchUri');
-    return uri != null && uri.length > 0;
+    return uri != null && (uri as string).length > 0;
   }
 
-  generateFullTextSearchDelegator() {
+  get isMeilisearchEnabled() {
+    const uri = configManager.getConfig('app:meilisearchUri');
+    return uri != null && (uri as string).length > 0;
+  }
+
+  getSearchProvider(): 'elasticsearch' | 'meilisearch' | undefined {
+    if (this.isMeilisearchEnabled) return 'meilisearch';
+    if (this.isElasticsearchEnabled) return 'elasticsearch';
+    return undefined;
+  }
+
+  generateFullTextSearchDelegator(): FullTextSearchDelegator | undefined {
     logger.info('Initializing search delegator');
+
+    if (this.isMeilisearchEnabled) {
+      logger.info('Meilisearch is enabled');
+      return new MeilisearchDelegator(this.crowi.socketIoService);
+    }
 
     if (this.isElasticsearchEnabled) {
       logger.info('Elasticsearch is enabled');
@@ -155,11 +173,11 @@ class SearchService implements SearchQueryParser, SearchResolver {
     }
 
     logger.info(
-      'No elasticsearch URI is specified so that full text search is disabled.',
+      'No search engine URI is specified so that full text search is disabled.',
     );
   }
 
-  generateNQDelegators(defaultDelegator: ElasticsearchDelegator): {
+  generateNQDelegators(defaultDelegator: SearchDelegator): {
     [key in SearchDelegatorName]: SearchDelegator;
   } {
     return {
